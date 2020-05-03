@@ -8,6 +8,17 @@ using SimpleFileBrowser;
 
 public class OpenFile : MonoBehaviour
 {
+
+	public Image photoToSwap;
+	public Image outlineToSwap;
+
+	const string originalFilePrefix = "CH{0}_FR{1}";
+	const string outlineFilePrefix = "CH{0}_FR{1}_Outline";
+	const string fileSuffix = "jpg";
+	private int characterNo = 2;
+	private int frameNo = 1;
+	private string sourchPath;
+
 	void Start()
 	{
 		// Set filters (optional)
@@ -31,7 +42,8 @@ public class OpenFile : MonoBehaviour
 		// Path: C:\Users
 		// Icon: default (folder icon)
 		FileBrowser.AddQuickLink("Users", "C:\\Users", null);
-
+		FileBrowser.AddQuickLink("Game", Application.dataPath, null);
+		
 		// Show a save file dialog 
 		// onSuccess event: not registered (which means this dialog is pretty useless)
 		// onCancel event: not registered
@@ -77,14 +89,59 @@ public class OpenFile : MonoBehaviour
 		}
 	}
 
+
+
+	IEnumerator ShowLoadDialogFolderCoroutine()
+	{
+		// Show a load file dialog and wait for a response from user
+		// Load file/folder: file, Initial path: default (Documents), Title: "Load File", submit button text: "Load"
+		yield return FileBrowser.WaitForLoadDialog(true, null, "Select Folder", "Select");
+
+		// Dialog is closed
+		// Print whether a file is chosen (FileBrowser.Success)
+		// and the path to the selected file (FileBrowser.Result) (null, if FileBrowser.Success is false)
+		Debug.Log(FileBrowser.Success + " " + FileBrowser.Result);
+
+		if (FileBrowser.Success)
+		{
+			sourchPath = FileBrowser.Result;
+
+			string strCh = (characterNo < 10) ? ("0" + characterNo.ToString()) : characterNo.ToString();
+			string strFr = (frameNo < 10) ? ("0" + frameNo.ToString()) : frameNo.ToString();
+
+			string outlineFileStr = "//" + string.Format(outlineFilePrefix, strCh, strFr) + "." + fileSuffix;
+			string originalFileStr = "//" + string.Format(originalFilePrefix, strCh, strFr) + "." + fileSuffix;
+						
+			var photofileContent = FileBrowserHelpers.ReadBytesFromFile(FileBrowser.Result +originalFileStr);
+			var outlinefileContent = FileBrowserHelpers.ReadBytesFromFile(FileBrowser.Result + outlineFileStr);
+
+			photoToSwap.sprite.texture.LoadImage(photofileContent);
+			outlineToSwap.sprite.texture.LoadImage(outlinefileContent);
+			
+		}
+	}
+
+	public void swapImage()
+	{
+
+	}
+
+
+	public void OpenFolderLocation()
+	{
+		// For Folders
+		StartCoroutine(ShowLoadDialogFolderCoroutine());
+	}
 	public void OpenNewFile()
     {
+		// For Spacific File
+		StartCoroutine(ShowLoadDialogCoroutine());
 
-		
+
 
 		//string path= EditorUtility.OpenFilePanel("Overwrite file", "", "jpg");
 		//ShowLoadDialogCoroutine();
-		StartCoroutine(ShowLoadDialogCoroutine());
+
 		/*FileBrowser.ShowLoadDialog((path) => { Debug.Log("Selected: " + path); },
 									   () => { Debug.Log("Canceled"); },
 									   true, null, "Select Folder", "Select");
