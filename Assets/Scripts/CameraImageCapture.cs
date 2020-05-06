@@ -41,6 +41,7 @@ public class CameraImageCapture : MonoBehaviour
     private int CameraNo = 1;
     private WebCamDevice[] devices;
 
+    public System.Action<string> onDebug;
     public System.Action<Texture2D> onTexture2DEvent;
 
     private Renderer rndr;

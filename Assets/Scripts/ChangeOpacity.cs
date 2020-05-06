@@ -5,13 +5,13 @@ using UnityEngine.UI;
 
 public class ChangeOpacity : MonoBehaviour
 {
-    private Image img;
+    private RawImage img;
 
 
     // Start is called before the first frame update
     void Awake()
     {
-        img = GetComponent<Image>();
+        img = GetComponent<RawImage>();
     }
 
     public void AdjustOpacity(float value) {
