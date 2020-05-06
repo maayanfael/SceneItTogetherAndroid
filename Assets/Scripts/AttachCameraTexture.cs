@@ -7,6 +7,7 @@ public class AttachCameraTexture : MonoBehaviour
 
     public UnityEngine.UI.Image img;
     private ReadCameraToTexture camReader;
+    private Texture2D copyFrame;
     private void Reset() {
         if(camReader == null) camReader = GameObject.FindObjectOfType<ReadCameraToTexture>();
     }
@@ -14,23 +15,39 @@ public class AttachCameraTexture : MonoBehaviour
 
         Reset();
     }
+    private void Start() {
+    }
 
     void OnEnable()
-    {//TODO fix reference
-        camReader.onTextureChangeEvent += OnNewTexture2dFromCamera;
-        if(camReader.ActiveTexture2D != null) OnNewTexture2dFromCamera(camReader.ActiveTexture2D);
+    {
+        camReader.onTextureChangeEvent += OnChangeTexture;
+        if(camReader.ActiveTexture2D != null) OnChangeTexture(camReader.ActiveTexture2D);
+
+        
     }
     void OnDisable() {
         if(camReader)
-            camReader.onTextureChangeEvent -= OnNewTexture2dFromCamera;
+            camReader.onTextureChangeEvent -= OnChangeTexture;
+        StopAllCoroutines();
     }
 
-    private void OnNewTexture2dFromCamera(Texture2D camTxtur) {
+    public void PauseUpdateFromCamera(float pauseDelay) {
+        if(copyFrame == null || copyFrame.width != camReader.ActiveTexture2D.width
+            || copyFrame.height  != camReader.ActiveTexture2D.height)
+            copyFrame = new Texture2D(camReader.ActiveTexture2D.width, camReader.ActiveTexture2D.height);
 
-        Debug.Log("Update camera with new textures");
-        //img.dis\ = true;
+        copyFrame.SetPixels(camReader.ActiveTexture2D.GetPixels());
+        copyFrame.Apply();
+
+        OnChangeTexture(copyFrame);
+
+        //TODO Consider camera might change texture and the update will occure before the time ended?
+        this.WaitInvoke(() => OnChangeTexture(camReader.ActiveTexture2D), pauseDelay);
+    }
+
+    private void OnChangeTexture(Texture2D camTxtur) {
+        Debug.Log("OnChangeTexture");
         img.enabled = false;
-        //img.material.mainTexture = null;
         img.material.mainTexture = camTxtur;
         img.enabled = true;
     }
